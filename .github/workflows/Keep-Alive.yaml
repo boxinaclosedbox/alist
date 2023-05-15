@@ -1,0 +1,27 @@
+name: Keep Actions Alive
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '2 1 2 * *'
+jobs:
+  KeepAlive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+       - name: Checkouts
+         uses: actions/checkout@v3
+
+       - name: Commit to 'keepalive' branch
+         run: |
+              REPO_URL=$(git config --get remote.origin.url) ; REPO_BASE=$(echo "${REPO_URL}" |sed 's/.*\/\///g') ; USERNAME=$(echo $REPO_BASE |sed 's/\/.*//g') ; GITHUB_TOKEN=${{secrets.GITHUB_TOKEN}}
+              if [ "${GITHUB_EMAIL}" = "" ]; then GITHUB_EMAIL=boxinaclosedbox@gmail.com ; fi ; git config --global user.email "${GITHUB_EMAIL}"
+              if [ "${GITHUB_USERNAME}" = "" ]; then GITHUB_USERNAME="Box In A Box" ; fi ; git config --global user.name "${GITHUB_USERNAME}"
+              rm -rf * .git .github
+              echo "${RANDOM}${RANDOM}${RANDOM}${RANDOM}${RANDOM}" >> Random.txt
+              git init ; git add Random.txt
+              git commit -m "KeepALive As of \"$(date)\""
+              git remote add origin https://"{USERNAME}":"${GITHUB_TOKEN}"@"${REPO_BASE}"
+              git checkout -b keepalive
+              git push --set-upstream origin keepalive -f
